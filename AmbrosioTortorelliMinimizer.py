@@ -127,17 +127,17 @@ def main_():
 			base_ims_dir = fr'C:\Study\Datasets\BSD\500\BSDS500\data\images\features'
 	else:
 		if ds_type == 'bsd300':
-			main_ims_folder = r"D:\DataSet\BSD\300\BSDS300\images\train"
+			main_ims_folder = r"D:\DataSet\BSD\300\BSDS300\images"
 			base_ims_dir = fr'D:\DataSet\BSD\300\BSDS300\images\features'
 		elif ds_type == 'bsd500':
-			main_ims_folder = r"D:\DataSet\BSD\500\BSDS500\data\images\train"
+			main_ims_folder = r"D:\DataSet\BSD\500\BSDS500\data\images"
 			base_ims_dir = fr'D:\DataSet\BSD\500\BSDS500\data\images\features'
 
 	for split_type in ['train', 'test']:
 		out_dir = os.path.join(base_ims_dir,f'{split_type}_AT')
 		if not os.path.isdir(out_dir):
 			os.makedirs(out_dir)
-		segment_images(main_ims_folder, out_dir)
+		segment_images(os.path.join(main_ims_folder, split_type), out_dir)
 
 
 if __name__ == "__main__":
