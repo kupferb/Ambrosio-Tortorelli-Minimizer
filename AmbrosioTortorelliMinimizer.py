@@ -9,6 +9,7 @@ import sys
 import scipy
 from scipy.sparse.linalg import LinearOperator
 from scipy.io import savemat
+import matplotlib.pyplot as plt
 	
 class AmbrosioTortorelliMinimizer():
 	def __init__(self, img, iterations = 1, solver_maxiterations = 10, tol = 0.1, alpha = 1000, beta = 0.01, epsilon = 0.01):
@@ -110,12 +111,24 @@ def segment_images(main_ims_folder, out_dir):
 
 		u = cv2.merge(result)
 		v = np.maximum(*edges)
-
+		v = (v-v.min())/(v.max()-v.min()+1e-14)
+		v = (v > 0.5).astype(float)
 		# show_image(v, "edges")
 		# show_image(u, "image")
 		# show_image(img, "original")
 		# cv2.waitKey(-1)
-		savemat(os.path.join(out_dir, f'{im[:-4]}.mat'), {'interp_sp_image':cv2.merge([u[:,:,2],u[:,:,1],u[:,:,0]]).astype(float), 'edges':v.astype(float)})
+		# plt.figure()
+		# plt.imshow(v)
+		# plt.title("edges")
+		# plt.set_cmap('gray')
+		# plt.figure()
+		# plt.imshow(u[:, :, [2, 1, 0]])
+		# plt.title("images")
+		# plt.figure()
+		# plt.imshow(img[:, :, [2, 1, 0]])
+		# plt.title("original")
+		# plt.show()
+		savemat(os.path.join(out_dir, f'{im[:-4]}.mat'), {'interp_sp_image':u[:, :, [2, 1, 0]].astype(float), 'edges':v})
 
 
 def main_():
