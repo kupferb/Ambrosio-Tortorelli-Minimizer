@@ -109,10 +109,16 @@ def segment_images(main_ims_folder, out_dir):
 			result.append(u)
 			edges.append(v)
 
+		lap = cv2.Laplacian(img, ddepth=cv2.CV_8UC3, ksize=3)
 		u = cv2.merge(result)
+		u = u[:, :, [2, 1, 0]].astype(float)
 		v = np.maximum(*edges)
 		v = (v-v.min())/(v.max()-v.min()+1e-14)
 		v = (v > 0.5).astype(float)
+		for k_ch in range(3):
+			u[:, :, k_ch] += (v * lap[:, :, k_ch])
+			u[:, :, k_ch] = 255 * (u[:, :, k_ch] - u[:, :, k_ch].min()) / (u[:, :, k_ch].max() - u[:, :, k_ch].min())
+
 		# show_image(v, "edges")
 		# show_image(u, "image")
 		# show_image(img, "original")
@@ -128,29 +134,57 @@ def segment_images(main_ims_folder, out_dir):
 		# plt.imshow(img[:, :, [2, 1, 0]])
 		# plt.title("original")
 		# plt.show()
-		savemat(os.path.join(out_dir, f'{im[:-4]}.mat'), {'interp_sp_image':u[:, :, [2, 1, 0]].astype(float), 'edges':v})
+		savemat(os.path.join(out_dir, f'{im[:-4]}.mat'), {'interp_sp_image':u, 'edges':v})
 
 
 def main_():
-	ds_type = 'bsd300'
-	if os.environ["COMPUTERNAME"] == 'BENNYK':
-		if ds_type == 'bsd300':
-			base_ims_dir = fr'C:\Study\Datasets\BSD\300\BSDS300\images\features'
-		elif ds_type == 'bsd500':
-			base_ims_dir = fr'C:\Study\Datasets\BSD\500\BSDS500\data\images\features'
-	else:
-		if ds_type == 'bsd300':
-			main_ims_folder = r"D:\DataSet\BSD\300\BSDS300\images"
-			base_ims_dir = fr'D:\DataSet\BSD\300\BSDS300\images\features'
-		elif ds_type == 'bsd500':
-			main_ims_folder = r"D:\DataSet\BSD\500\BSDS500\data\images"
-			base_ims_dir = fr'D:\DataSet\BSD\500\BSDS500\data\images\features'
+	decimation = 4
+	if decimation:
+		num_dec_ims = decimation ** 2
 
-	for split_type in ['train', 'test']:
-		out_dir = os.path.join(base_ims_dir,f'{split_type}_AT')
-		if not os.path.isdir(out_dir):
-			os.makedirs(out_dir)
-		segment_images(os.path.join(main_ims_folder, split_type), out_dir)
+		for k_dec_im in range(num_dec_ims):
+			decimation_suffix = f'_{decimation}_{k_dec_im + 1:02d}'
+			ds_type = 'bsd300'
+			if os.environ["COMPUTERNAME"] == 'BENNYK':
+				if ds_type == 'bsd300':
+					base_ims_dir = fr'C:\Study\Datasets\BSD\300\BSDS300{decimation_suffix}\images\features'
+				elif ds_type == 'bsd500':
+					base_ims_dir = fr'C:\Study\Datasets\BSD\500\BSDS500{decimation_suffix}\data\images\features'
+			else:
+				if ds_type == 'bsd300':
+					main_ims_folder = fr"D:\DataSet\BSD\300\BSDS300{decimation_suffix}\images"
+					base_ims_dir = fr'D:\DataSet\BSD\300\BSDS300{decimation_suffix}\images\features'
+				elif ds_type == 'bsd500':
+					main_ims_folder = fr"D:\DataSet\BSD\500\BSDS500{decimation_suffix}\data\images"
+					base_ims_dir = fr'D:\DataSet\BSD\500\BSDS500{decimation_suffix}\data\images\features'
+
+			for split_type in ['train', 'test']:
+				out_dir = os.path.join(base_ims_dir, f'{split_type}_AT_with_sharpening{decimation_suffix}')
+				if not os.path.isdir(out_dir):
+					os.makedirs(out_dir)
+				segment_images(os.path.join(main_ims_folder, split_type), out_dir)
+
+	else:
+
+		ds_type = 'bsd300'
+		if os.environ["COMPUTERNAME"] == 'BENNYK':
+			if ds_type == 'bsd300':
+				base_ims_dir = fr'C:\Study\Datasets\BSD\300\BSDS300\images\features'
+			elif ds_type == 'bsd500':
+				base_ims_dir = fr'C:\Study\Datasets\BSD\500\BSDS500\data\images\features'
+		else:
+			if ds_type == 'bsd300':
+				main_ims_folder = r"D:\DataSet\BSD\300\BSDS300\images"
+				base_ims_dir = fr'D:\DataSet\BSD\300\BSDS300\images\features'
+			elif ds_type == 'bsd500':
+				main_ims_folder = r"D:\DataSet\BSD\500\BSDS500\data\images"
+				base_ims_dir = fr'D:\DataSet\BSD\500\BSDS500\data\images\features'
+
+		for split_type in ['train', 'test']:
+			out_dir = os.path.join(base_ims_dir,f'{split_type}_AT')
+			if not os.path.isdir(out_dir):
+				os.makedirs(out_dir)
+			segment_images(os.path.join(main_ims_folder, split_type), out_dir)
 
 
 if __name__ == "__main__":
