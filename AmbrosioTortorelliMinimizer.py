@@ -108,11 +108,15 @@ def segment_images(main_ims_folder, out_dir):
 			u, v = solver.minimize()
 			result.append(u)
 			edges.append(v)
-
 		lap = cv2.Laplacian(img, ddepth=cv2.CV_8UC3, ksize=3)
 		u = cv2.merge(result)
 		u = u[:, :, [2, 1, 0]].astype(float)
+
 		v = np.maximum(*edges)
+		# plt.imsave((rf"D:\Study\DOCS\Thesis\Images\AT\u_{k_im}.png"), u.astype(np.uint8))
+		# plt.imsave((rf"D:\Study\DOCS\Thesis\Images\AT\v_{k_im}.png"), np.dstack([v,v,v]))
+		# plt.imsave((rf"D:\Study\DOCS\Thesis\Images\AT\img_{k_im}.png"), img[:,:,[2,1,0]])
+
 		v = (v-v.min())/(v.max()-v.min()+1e-14)
 		v = (v > 0.5).astype(float)
 		for k_ch in range(3):
@@ -138,7 +142,7 @@ def segment_images(main_ims_folder, out_dir):
 
 
 def main_():
-	decimation = 4
+	decimation = None#4
 	if decimation:
 		num_dec_ims = decimation ** 2
 
